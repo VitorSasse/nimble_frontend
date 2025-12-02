@@ -159,9 +159,9 @@ const pagamentosApiConfig = (() => {
     if (typeof window === 'undefined') {
         return { baseUrl: 'https://nimble-backend-1pxq.onrender.com' };
     }
-    return { baseUrl: 'https://nimble-backend-1pxq.onrender.com' };
+    const base = window.NIMBLE_PAYMENTS_API_URL || 'https://nimble-backend-1pxq.onrender.com';
+    return { baseUrl: base.replace(/\/$/, '') };
 })();
-
 let supabaseClient = null;
 
 document.addEventListener('DOMContentLoaded', () => {
