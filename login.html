@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Nimble Delivery</title>
+    <link rel="stylesheet" href="styles.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script defer src="supabase-config.js"></script>
+    <script defer src="scripts.js"></script>
+</head>
+<body data-page="login">
+    <header class="top-bar">
+        <a href="index.html" class="logo" aria-label="Ir para a página inicial">Nimble Delivery</a>
+        <div class="top-bar-controls">
+            <nav class="main-nav">
+                <a href="index.html">Início</a>
+                <a href="cadastro.html">Cadastro</a>
+                <a href="login.html" class="active">Login</a>
+                <a href="perfil.html">Minha Conta</a>
+                <a href="chat.html">Chat</a>
+                <a href="carrinho.html" class="cart-link" aria-label="Abrir carrinho">
+                    <span class="cart-icon">🛒</span>
+                </a>
+            </nav>
+            <div class="top-bar-actions">
+                <div class="top-bar-user" id="top-bar-user" aria-live="polite">Olá, visitante</div>
+                <button type="button" class="logout-button hidden" id="logout-button">Sair</button>
+            </div>
+        </div>
+    </header>
+
+    <main class="form-wrapper">
+        <form class="card form-card" id="login-form">
+            <h1>Bem-vindo de volta</h1>
+            <p>Faça login para acompanhar pedidos ou gerenciar produtos.</p>
+
+            <label for="login-email">E-mail</label>
+            <input type="email" id="login-email" name="login-email" placeholder="voce@email.com" required>
+
+            <label for="login-senha">Senha</label>
+            <input type="password" id="login-senha" name="login-senha" placeholder="Digite sua senha" required>
+
+            <div class="form-check">
+                <label><input type="checkbox" id="lembrar"> Manter conectado</label>
+                <a href="#" class="link-muted">Esqueci a senha</a>
+            </div>
+
+            <button type="submit" class="primary">Entrar</button>
+            <p class="form-switch">Novo por aqui? <a href="cadastro.html">Crie sua conta</a>.</p>
+            <div class="form-feedback" id="login-feedback"></div>
+        </form>
+    </main>
+</body>
+</html>
+

@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cadastro - Nimble Delivery</title>
+    <link rel="stylesheet" href="styles.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script defer src="supabase-config.js"></script>
+    <script defer src="scripts.js"></script>
+</head>
+<body data-page="register">
+    <header class="top-bar">
+        <a href="index.html" class="logo" aria-label="Ir para a página inicial">Nimble Delivery</a>
+        <div class="top-bar-controls">
+            <nav class="main-nav">
+                <a href="index.html">Início</a>
+                <a href="cadastro.html" class="active">Cadastro</a>
+                <a href="login.html">Login</a>
+                <a href="perfil.html">Minha Conta</a>
+                <a href="chat.html">Chat</a>
+                <a href="carrinho.html" class="cart-link" aria-label="Abrir carrinho">
+                    <span class="cart-icon">🛒</span>
+                </a>
+            </nav>
+            <div class="top-bar-actions">
+                <div class="top-bar-user" id="top-bar-user" aria-live="polite">Olá, visitante</div>
+                <button type="button" class="logout-button hidden" id="logout-button">Sair</button>
+            </div>
+        </div>
+    </header>
+
+    <main class="form-wrapper">
+        <form class="card form-card" id="register-form">
+            <h1>Crie sua conta</h1>
+            <p>Cadastre-se para começar a comprar ou vender na Nimble.</p>
+
+            <label for="nome">Nome completo</label>
+            <input type="text" id="nome" name="nome" placeholder="Ex: Ana Silva" required>
+
+            <label for="email">E-mail</label>
+            <input type="email" id="email" name="email" placeholder="voce@email.com" required>
+
+            <label for="telefone">Telefone</label>
+            <input type="tel" id="telefone" name="telefone" placeholder="(11) 99999-0000">
+
+            <label for="senha">Senha</label>
+            <input type="password" id="senha" name="senha" placeholder="Crie uma senha segura" required>
+
+            <fieldset class="radio-group">
+                <legend>Como você pretende usar a Nimble?</legend>
+                <label><input type="radio" name="perfil" value="cliente" checked> Quero comprar</label>
+                <label><input type="radio" name="perfil" value="negocio"> Tenho um negócio</label>
+            </fieldset>
+
+            <button type="submit" class="primary">Concluir cadastro</button>
+            <p class="form-footnote">Ao continuar você aceita nossos termos de uso e política de privacidade.</p>
+            <p class="form-switch">Já possui conta? <a href="login.html">Acesse aqui</a>.</p>
+            <div class="form-feedback" id="register-feedback"></div>
+        </form>
+    </main>
+</body>
+</html>
+

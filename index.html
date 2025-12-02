@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nimble Delivery</title>
+    <link rel="stylesheet" href="styles.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script defer src="supabase-config.js"></script>
+    <script defer src="scripts.js"></script>
+</head>
+<body data-page="home">
+    <header class="top-bar">
+        <a href="index.html" class="logo" aria-label="Ir para a página inicial">Nimble Delivery</a>
+        <div class="top-bar-controls">
+            <nav class="main-nav">
+                <a href="index.html">Início</a>
+                <a href="cadastro.html">Cadastro</a>
+                <a href="login.html">Login</a>
+                <a href="perfil.html">Minha Conta</a>
+                <a href="chat.html">Chat</a>
+                <a href="carrinho.html" class="cart-link" aria-label="Abrir carrinho">
+                    <span class="cart-icon">🛒</span>
+                </a>
+            </nav>
+            <div class="top-bar-actions">
+                <div class="top-bar-user" id="top-bar-user" aria-live="polite">Olá, visitante</div>
+                <button type="button" class="logout-button hidden" id="logout-button">Sair</button>
+            </div>
+        </div>
+    </header>
+
+    <main>
+        <section class="hero">
+            <div>
+                <p class="badge">24h por dia</p>
+                <h1>Entrega rápida de tudo que você precisa</h1>
+                <p>Com a Nimble você recebe comidas deliciosas, roupas estilosas e itens para casa em minutos.</p>
+            </div>
+        </section>
+
+        <section class="category-gallery" id="category-gallery"></section>
+
+        <section class="cta-section">
+            <div>
+                <h2>Tem um negócio? Venda na Nimble.</h2>
+                <p>Cadastre sua loja e disponibilize seus produtos para milhares de clientes.</p>
+            </div>
+            <a href="perfil.html" class="secondary">Criar conta comercial</a>
+        </section>
+    </main>
+
+    <footer>
+        <p>© 2025 Nimble Delivery. Todas as marcas pertencem aos seus respectivos donos.</p>
+        <div class="footer-links">
+            <a href="https://wa.me/5547989124232" target="_blank" rel="noopener">Contato com suporte (Diego)</a>
+            <a href="https://wa.me/554797773925" target="_blank" rel="noopener">Contato com suporte (Vitor)</a>
+        </div>
+    </footer>
+</body>
+</html>
+

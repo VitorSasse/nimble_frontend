@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Carrinho - Nimble Delivery</title>
+    <link rel="stylesheet" href="styles.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script defer src="supabase-config.js"></script>
+    <script defer src="scripts.js"></script>
+</head>
+<body data-page="cart">
+    <header class="top-bar">
+        <a href="index.html" class="logo" aria-label="Ir para a página inicial">Nimble Delivery</a>
+        <div class="top-bar-controls">
+            <nav class="main-nav">
+                <a href="index.html">Início</a>
+                <a href="cadastro.html">Cadastro</a>
+                <a href="login.html">Login</a>
+                <a href="perfil.html">Minha Conta</a>
+                <a href="chat.html">Chat</a>
+                <a href="carrinho.html" class="cart-link active" aria-label="Abrir carrinho">
+                    <span class="cart-icon">🛒</span>
+                </a>
+            </nav>
+            <div class="top-bar-actions">
+                <div class="top-bar-user" id="top-bar-user" aria-live="polite">Olá, visitante</div>
+                <button type="button" class="logout-button hidden" id="logout-button">Sair</button>
+            </div>
+        </div>
+    </header>
+
+    <main class="cart-page">
+        <section class="card cart-details" id="cart-product">
+            <p class="cart-empty">Você ainda não selecionou nenhum produto.</p>
+        </section>
+
+        <section class="card cart-summary" id="cart-summary-card">
+            <h2>Resumo do pedido</h2>
+            <div id="cart-summary"></div>
+            <div class="cart-address-card">
+                <h3>Endereço de entrega</h3>
+                <p id="cart-address-info">Cadastre seu endereço na área "Minha Conta" para continuar.</p>
+                <a href="perfil.html#address-section" class="link-inline">Atualizar endereço</a>
+            </div>
+            <div class="checkout-payment">
+                <h3>Pagamento</h3>
+                <div class="delivery-check">
+                    <p>Atendemos apenas Balneário Piçarras, Penha e Barra Velha.</p>
+                    <div class="delivery-options">
+                        <label>
+                            <input type="radio" name="delivery-area" value="yes">
+                            Moro em uma dessas cidades
+                        </label>
+                        <label>
+                            <input type="radio" name="delivery-area" value="no">
+                            Não moro nessas cidades
+                        </label>
+                    </div>
+                    <div class="form-feedback" id="delivery-area-feedback"></div>
+                </div>
+
+                <form id="payment-form">
+                    <div class="payment-methods">
+                        <label class="payment-option">
+                            <input type="radio" name="payment-method" value="card" checked>
+                            <span>Cartão</span>
+                        </label>
+                        <label class="payment-option">
+                            <input type="radio" name="payment-method" value="pix">
+                            <span>PIX</span>
+                        </label>
+                        <label class="payment-option">
+                            <input type="radio" name="payment-method" value="cash">
+                            <span>Dinheiro</span>
+                        </label>
+                    </div>
+
+                    <div class="payment-fields" data-method="card">
+                        <div class="payment-field-grid">
+                            <label>
+                                Número do cartão
+                                <input type="text" id="card-number" inputmode="numeric" maxlength="19" placeholder="1234 5678 9012 3456" required>
+                            </label>
+                            <label>
+                                Nome impresso
+                                <input type="text" id="card-holder" placeholder="Nome completo" required>
+                            </label>
+                        </div>
+                        <div class="payment-field-grid compact">
+                            <label>
+                                Validade (MM/AA)
+                                <input type="text" id="card-expiration" inputmode="numeric" maxlength="5" placeholder="08/28" required>
+                            </label>
+                            <label>
+                                CVV
+                                <input type="password" id="card-cvv" inputmode="numeric" maxlength="4" placeholder="123" required>
+                            </label>
+                        </div>
+                        <p class="payment-hint">Os dados são usados apenas para simulação do fluxo.</p>
+                    </div>
+
+                    <div class="payment-fields hidden" data-method="pix">
+                        <div class="pix-box">
+                            <p>Geramos automaticamente o QR Code válido por 15 minutos.</p>
+                            <strong id="pix-static-key">13643389981</strong>
+                        </div>
+                        <div class="pix-qrcode-area">
+                            <div class="pix-qrcode-preview hidden" id="pix-qrcode-container">
+                                <img src="" alt="QR Code PIX" id="pix-qrcode-image">
+                                <textarea readonly id="pix-copy-code" class="pix-copy-code"></textarea>
+                                <button type="button" class="secondary" id="pix-copy-btn">Copiar código PIX</button>
+                                <p class="payment-hint">Use o QR Code ou o código “copia e cola”. Após pagar, volte e confirme o pedido.</p>
+                            </div>
+                            <button type="button" class="primary" id="pix-generate">Gerar QR Code PIX</button>
+                            <div class="form-feedback" id="pix-feedback"></div>
+                        </div>
+                    </div>
+
+                    <div class="payment-fields hidden" data-method="cash">
+                        <label>
+                            Precisa de troco?
+                            <select id="cash-change-option">
+                                <option value="nao">Não</option>
+                                <option value="sim">Sim, levarei valor exato</option>
+                                <option value="troco">Sim, preciso de troco</option>
+                            </select>
+                        </label>
+                        <label class="troco-field hidden" id="cash-change-wrapper">
+                            Troco para quanto?
+                            <input type="number" id="cash-change" min="0" step="1" placeholder="Ex.: 100">
+                        </label>
+                        <p class="payment-hint">O entregador verá essa informação junto ao pedido.</p>
+                    </div>
+                </form>
+                <div class="form-feedback" id="payment-feedback"></div>
+            </div>
+            <button class="primary" id="cart-confirm">Confirmar pedido</button>
+            <button class="secondary" id="cart-back">Voltar para os produtos</button>
+            <div class="form-feedback" id="cart-feedback"></div>
+        </section>
+    </main>
+</body>
+</html>
+
+

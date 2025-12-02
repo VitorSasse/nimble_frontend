@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Minha Conta - Nimble Delivery</title>
+    <link rel="stylesheet" href="styles.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script defer src="supabase-config.js"></script>
+    <script defer src="scripts.js"></script>
+</head>
+<body data-page="profile">
+    <header class="top-bar">
+        <a href="index.html" class="logo" aria-label="Ir para a página inicial">Nimble Delivery</a>
+        <div class="top-bar-controls">
+            <nav class="main-nav">
+                <a href="index.html">Início</a>
+                <a href="cadastro.html">Cadastro</a>
+                <a href="login.html">Login</a>
+                <a href="perfil.html" class="active">Minha Conta</a>
+                <a href="chat.html">Chat</a>
+                <a href="carrinho.html" class="cart-link" aria-label="Abrir carrinho">
+                    <span class="cart-icon">🛒</span>
+                </a>
+            </nav>
+            <div class="top-bar-actions">
+                <div class="top-bar-user" id="top-bar-user" aria-live="polite">Olá, visitante</div>
+                <button type="button" class="logout-button hidden" id="logout-button">Sair</button>
+            </div>
+        </div>
+    </header>
+
+    <main class="profile-page">
+        <section class="card category-context hidden" id="category-context">
+            <p class="badge">Categoria selecionada</p>
+            <h1 id="category-title">Categoria escolhida</h1>
+            <p id="category-description">Selecione como deseja continuar.</p>
+            <div class="context-actions">
+                <button class="primary" id="context-client">Quero comprar</button>
+                <button class="secondary" id="context-seller">Sou vendedor</button>
+            </div>
+        </section>
+
+        <section class="profile-layout split-layout">
+            <div class="profile-column left-column">
+                <section class="card profile-choice">
+                    <h1>Como podemos ajudar?</h1>
+                    <p>Escolha abaixo o tipo de experiência que deseja na Nimble.</p>
+                    <div class="choice-grid">
+                        <div class="choice-card">
+                            <h2>Sou Cliente</h2>
+                            <p>Quero descobrir produtos, salvar favoritos e acompanhar entregas.</p>
+                            <button class="role-button primary"
+                                data-role="cliente"
+                                data-target="#cliente-section"
+                                type="button">
+                                Ir para produtos
+                            </button>
+                        </div>
+                        <div class="choice-card">
+                            <h2>Tenho um negócio</h2>
+                            <p>Desejo cadastrar produtos e disponibilizá-los no marketplace.</p>
+                            <button class="role-button secondary"
+                                data-role="negocio"
+                                data-target="#negocio-section"
+                                type="button">
+                                Adicionar produto
+                            </button>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="card client-product-area" id="client-products-panel">
+                    <h3>Escolha um produto</h3>
+                    <p>Explore itens adicionados pelos parceiros ou sugestões pré-selecionadas.</p>
+                    <div class="client-product-list" id="client-product-list"></div>
+                    <div class="form-feedback" id="client-feedback"></div>
+                </section>
+            </div>
+
+            <div class="profile-column right-column">
+                <section class="card profile-placeholder" id="profile-placeholder">
+                    <p class="badge">Escolha um perfil</p>
+                    <h2>Selecione uma opção acima</h2>
+                    <p>Toque em “Sou Cliente” para explorar e reservar itens ou escolha “Tenho um negócio” para cadastrar produtos.</p>
+                </section>
+
+                <section class="card profile-content hidden" id="cliente-section">
+                <h2>Experiência do cliente</h2>
+                <ul class="feature-list">
+                    <li>Monte listas rápidas de compras</li>
+                    <li>Acompanhe status do pedido em tempo real</li>
+                    <li>Recomendações personalizadas por bairro</li>
+                </ul>
+
+                <section class="client-profile-card">
+                    <div class="client-profile-head">
+                        <div>
+                            <h3>Dados pessoais</h3>
+                            <p>Mantenha seu perfil sincronizado em todos os dispositivos.</p>
+                        </div>
+                        <img id="profile-photo-preview" src="https://avatars.githubusercontent.com/u/0?v=4" alt="Foto do perfil">
+                    </div>
+                    <form id="profile-form" class="profile-form">
+                        <label>
+                            Nome completo
+                            <input type="text" id="profile-name" autocomplete="name" required>
+                        </label>
+                        <label>
+                            E-mail
+                            <input type="email" id="profile-email" autocomplete="email" required>
+                        </label>
+                        <label>
+                            Telefone
+                            <input type="tel" id="profile-phone" autocomplete="tel">
+                        </label>
+                        <label>
+                            URL da foto de perfil
+                            <input type="url" id="profile-photo" placeholder="https://" autocomplete="photo">
+                        </label>
+                        <button type="submit" class="primary">Salvar dados</button>
+                    </form>
+                    <div class="form-feedback" id="profile-feedback"></div>
+                </section>
+
+                <section class="client-password-card">
+                    <h3>Segurança</h3>
+                    <form id="password-form" class="password-form">
+                        <label>
+                            Nova senha
+                            <input type="password" id="profile-password" minlength="6" placeholder="Digite a nova senha">
+                        </label>
+                        <label>
+                            Confirmar senha
+                            <input type="password" id="profile-password-confirm" minlength="6" placeholder="Repita a nova senha">
+                        </label>
+                        <button type="submit" class="secondary">Alterar senha</button>
+                    </form>
+                    <div class="form-feedback" id="password-feedback"></div>
+                </section>
+                <section class="client-orders" id="client-orders">
+                    <div class="client-orders-head">
+                        <h3>Meus pedidos</h3>
+                        <button type="button" class="secondary" id="refresh-orders">Atualizar</button>
+                    </div>
+                    <p class="client-orders-empty" id="client-orders-empty">Nenhum pedido encontrado por enquanto.</p>
+                    <ul class="client-orders-list" id="client-orders-list"></ul>
+                </section>
+
+                <div class="client-address-card" id="address-section">
+                    <div class="client-address-head">
+                        <h3>Endereço de entrega</h3>
+                        <p>Mantenha seus dados atualizados para agilizar cada pedido.</p>
+                    </div>
+                    <form id="address-form" class="address-form">
+                        <div class="address-grid">
+                            <label class="full">
+                                Nome completo
+                                <input type="text" id="endereco-nome" autocomplete="name" required>
+                            </label>
+                            <label class="wide">
+                                Rua / Avenida
+                                <input type="text" id="endereco-logradouro" autocomplete="address-line1" required>
+                            </label>
+                            <label>
+                                Número
+                                <input type="text" id="endereco-numero" autocomplete="address-line2" required>
+                            </label>
+                            <label class="wide">
+                                Complemento
+                                <input type="text" id="endereco-complemento" placeholder="Apto, bloco..." autocomplete="address-line2">
+                            </label>
+                            <label>
+                                Bairro
+                                <input type="text" id="endereco-bairro" autocomplete="address-level3" required>
+                            </label>
+                            <label>
+                                Cidade
+                                <input type="text" id="endereco-cidade" autocomplete="address-level2" required>
+                            </label>
+                            <label>
+                                Estado
+                                <input type="text" id="endereco-estado" maxlength="2" placeholder="UF" autocomplete="address-level1" required>
+                            </label>
+                            <label>
+                                CEP
+                                <input type="text" id="endereco-cep" inputmode="numeric" autocomplete="postal-code" required>
+                            </label>
+                            <label class="full">
+                                Referência
+                                <textarea id="endereco-referencia" rows="2" placeholder="Ponto de referência ou instruções para o entregador"></textarea>
+                            </label>
+                        </div>
+                        <button type="submit" class="primary" id="address-submit">Salvar endereço</button>
+                    </form>
+                    <div class="form-feedback" id="address-feedback"></div>
+                </div>
+
+            </section>
+
+                <section class="card profile-content hidden" id="negocio-section">
+                <h2>Cadastre novos produtos</h2>
+                <form id="product-form" class="product-form">
+                    <label for="produto-nome">Nome do produto</label>
+                    <input type="text" id="produto-nome" required>
+
+                    <label for="produto-descricao">Descrição</label>
+                    <textarea id="produto-descricao" rows="3" required></textarea>
+
+                    <label for="produto-categoria">Categoria</label>
+                    <select id="produto-categoria" required>
+                        <option value="">Selecione</option>
+                        <option value="alimentacao">Alimentação</option>
+                        <option value="vestuario">Vestuário</option>
+                        <option value="casa">Casa & Limpeza</option>
+                        <option value="objetos">Objetos</option>
+                    </select>
+
+                    <label for="produto-preco">Preço (R$)</label>
+                    <input type="number" id="produto-preco" min="0" step="0.01" required>
+
+                    <label for="produto-imagem">URL da imagem</label>
+                    <input type="url" id="produto-imagem" placeholder="https://">
+
+                    <label for="produto-endereco">Endereço da loja (visível aos clientes)</label>
+                    <textarea id="produto-endereco" rows="2" placeholder="Rua, número, bairro, cidade" required></textarea>
+
+                    <button type="submit" class="primary">Adicionar produto</button>
+                    <button type="button" class="secondary hidden" id="cancelar-edicao">Cancelar edição</button>
+                    <div class="form-feedback" id="product-feedback"></div>
+                </form>
+
+                <div class="product-table-wrapper">
+                    <h3>Seus produtos cadastrados</h3>
+                    <table id="seller-products">
+                        <thead>
+                            <tr>
+                                <th>Produto</th>
+                                <th>Categoria</th>
+                                <th>Preço</th>
+                                <th>Endereço da loja</th>
+                                <th>Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+
+                <div class="seller-sales-panel" id="seller-sales-panel">
+                    <div class="seller-sales-head">
+                        <h3>Histórico de vendas</h3>
+                        <span class="seller-sales-total" id="seller-sales-total"></span>
+                    </div>
+                    <p class="seller-sales-empty" id="seller-sales-empty">Ainda não registramos vendas para seus produtos.</p>
+                    <ul class="seller-sales-list" id="seller-sales-list"></ul>
+                </div>
+
+                <section class="seller-dashboard" id="seller-dashboard">
+                    <div class="seller-dashboard-head">
+                        <h3>Dashboard de vendas</h3>
+                        <button type="button" class="secondary" id="refresh-dashboard">Atualizar</button>
+                    </div>
+                    <div class="seller-kpi-grid">
+                        <article>
+                            <p>Vendas hoje</p>
+                            <strong id="kpi-day">0</strong>
+                        </article>
+                        <article>
+                            <p>Semana</p>
+                            <strong id="kpi-week">0</strong>
+                        </article>
+                        <article>
+                            <p>Mês</p>
+                            <strong id="kpi-month">0</strong>
+                        </article>
+                        <article>
+                            <p>Total faturado</p>
+                            <strong id="kpi-total">R$ 0,00</strong>
+                        </article>
+                        <article>
+                            <p>Concluídos</p>
+                            <strong id="kpi-done">0</strong>
+                        </article>
+                        <article>
+                            <p>Pendentes</p>
+                            <strong id="kpi-pending">0</strong>
+                        </article>
+                        <article>
+                            <p>Cancelados</p>
+                            <strong id="kpi-cancelled">0</strong>
+                        </article>
+                    </div>
+                    <div class="seller-chart-card">
+                        <canvas id="sales-chart" height="200"></canvas>
+                    </div>
+                    <div class="seller-lists-grid">
+                        <section>
+                            <h4>Produtos mais vendidos</h4>
+                            <ul id="top-products" class="seller-list"></ul>
+                        </section>
+                        <section>
+                            <h4>Vendas recentes</h4>
+                            <ul id="recent-sales" class="seller-list"></ul>
+                        </section>
+                    </div>
+                </section>
+                </section>
+            </div>
+        </section>
+
+        <div class="modal" id="order-modal" aria-hidden="true">
+            <div class="modal-content">
+                <button type="button" class="modal-close" id="order-modal-close" aria-label="Fechar edição">×</button>
+                <h3>Atualizar endereço do pedido</h3>
+                <form id="order-form" class="order-form">
+                    <p class="order-form-note">Altere o local de entrega deste pedido. Todas as pessoas envolvidas verão o novo endereço imediatamente.</p>
+                    <div class="address-grid order-address-grid">
+                        <label class="full">
+                            Nome completo
+                            <input type="text" id="order-address-nome" required>
+                        </label>
+                        <label class="wide">
+                            Rua / Avenida
+                            <input type="text" id="order-address-logradouro" required>
+                        </label>
+                        <label>
+                            Número
+                            <input type="text" id="order-address-numero" required>
+                        </label>
+                        <label class="wide">
+                            Complemento
+                            <input type="text" id="order-address-complemento" placeholder="Apto, bloco...">
+                        </label>
+                        <label>
+                            Bairro
+                            <input type="text" id="order-address-bairro" required>
+                        </label>
+                        <label>
+                            Cidade
+                            <input type="text" id="order-address-cidade" required>
+                        </label>
+                        <label>
+                            Estado
+                            <input type="text" id="order-address-estado" maxlength="2" placeholder="UF" required>
+                        </label>
+                        <label>
+                            CEP
+                            <input type="text" id="order-address-cep" inputmode="numeric">
+                        </label>
+                        <label class="full">
+                            Referência
+                            <textarea id="order-address-referencia" rows="2" placeholder="Ponto de referência"></textarea>
+                        </label>
+                    </div>
+                    <button type="submit" class="primary">Salvar endereço do pedido</button>
+                    <div class="form-feedback" id="order-modal-feedback"></div>
+                </form>
+            </div>
+        </div>
+
+    </main>
+</body>
+</html>
+

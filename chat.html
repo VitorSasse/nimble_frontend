@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat | Nimble Delivery</title>
+    <link rel="stylesheet" href="styles.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script defer src="supabase-config.js"></script>
+    <script defer src="scripts.js"></script>
+</head>
+<body data-page="chat">
+    <header class="top-bar">
+        <a href="index.html" class="logo" aria-label="Ir para a página inicial">Nimble Delivery</a>
+        <div class="top-bar-controls">
+            <nav class="main-nav">
+                <a href="index.html">Início</a>
+                <a href="cadastro.html">Cadastro</a>
+                <a href="login.html">Login</a>
+                <a href="perfil.html">Minha Conta</a>
+                <a href="chat.html" class="active">Chat</a>
+                <a href="carrinho.html" class="cart-link" aria-label="Abrir carrinho">
+                    <span class="cart-icon">🛒</span>
+                </a>
+            </nav>
+            <div class="top-bar-actions">
+                <div class="top-bar-user" id="top-bar-user" aria-live="polite">Olá, visitante</div>
+                <button type="button" class="logout-button hidden" id="logout-button">Sair</button>
+            </div>
+        </div>
+    </header>
+
+    <main>
+        <section class="chat-guard card" id="chat-guard">
+            <h1>Área exclusiva</h1>
+            <p>Faça login como cliente ou vendedor para acessar o chat.</p>
+            <div class="chat-guard-actions">
+                <a href="login.html" class="primary">Entrar</a>
+                <a href="cadastro.html" class="secondary">Criar conta</a>
+            </div>
+        </section>
+
+        <section class="chat-page hidden" id="chat-app">
+            <section class="card chat-sidebar">
+                <div class="chat-sidebar-head">
+                    <h1>Conversas</h1>
+                    <p id="chat-loading" class="chat-loading hidden">Carregando conversas...</p>
+                </div>
+                <div id="chat-conversations" class="chat-conversations"></div>
+                <p id="chat-empty" class="chat-empty">Ainda não existem conversas ativas.</p>
+            </section>
+
+            <section class="card chat-content">
+                <div class="chat-content-head">
+                    <div>
+                        <span class="badge" id="chat-order-tag">Pedido</span>
+                        <h2 id="chat-title">Selecione uma conversa</h2>
+                    </div>
+                    <small id="chat-status"></small>
+                </div>
+
+                <div id="chat-messages" class="chat-messages">
+                    <p class="chat-placeholder">Escolha uma conversa para visualizar as mensagens.</p>
+                </div>
+
+                <form id="chat-form" class="chat-form">
+                    <textarea id="chat-message" rows="2" placeholder="Digite sua mensagem" required></textarea>
+                    <button type="submit" class="primary">Enviar</button>
+                </form>
+                <div class="form-feedback" id="chat-message-feedback"></div>
+            </section>
+        </section>
+    </main>
+</body>
+</html>
+
