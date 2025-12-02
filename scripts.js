@@ -157,10 +157,9 @@ const supabaseConfig = (() => {
 
 const pagamentosApiConfig = (() => {
     if (typeof window === 'undefined') {
-        return { baseUrl: 'http://localhost:4000' };
+        return { baseUrl: 'https://nimble-backend-1pxq.onrender.com' };
     }
-    const base = window.NIMBLE_PAYMENTS_API_URL || 'http://localhost:4000';
-    return { baseUrl: base.replace(/\/$/, '') };
+    return { baseUrl: 'https://nimble-backend-1pxq.onrender.com' };
 })();
 
 let supabaseClient = null;
