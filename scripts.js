@@ -162,9 +162,51 @@ const pagamentosApiConfig = (() => {
     const base = window.NIMBLE_PAYMENTS_API_URL || 'https://nimble-backend-1pxq.onrender.com';
     return { baseUrl: base.replace(/\/$/, '') };
 })();
+
 let supabaseClient = null;
+let toastContainer = null;
+
+function initNotificacoes() {
+    if (typeof document === 'undefined') return;
+    if (toastContainer) return;
+    toastContainer = document.createElement('div');
+    toastContainer.className = 'toast-container';
+    document.body.appendChild(toastContainer);
+}
+
+function mostrarNotificacao(tipo = 'info', titulo = 'Notificação', mensagem = '') {
+    if (!toastContainer) initNotificacoes();
+    if (!toastContainer) return;
+    const toast = document.createElement('div');
+    toast.className = `toast toast-${tipo}`;
+    toast.innerHTML = `<strong>${titulo}</strong><p>${mensagem}</p>`;
+    toastContainer.appendChild(toast);
+    requestAnimationFrame(() => toast.classList.add('visible'));
+    setTimeout(() => {
+        toast.classList.remove('visible');
+        setTimeout(() => toast.remove(), 300);
+    }, 5000);
+}
+
+function atualizarBadgeChatGlobal(total) {
+    const links = document.querySelectorAll('nav a[href="chat.html"]');
+    links.forEach(link => {
+        let badge = link.querySelector('.nav-badge');
+        if (total > 0) {
+            if (!badge) {
+                badge = document.createElement('span');
+                badge.className = 'nav-badge';
+                link.appendChild(badge);
+            }
+            badge.textContent = total > 9 ? '9+' : total.toString();
+        } else if (badge) {
+            badge.remove();
+        }
+    });
+}
 
 document.addEventListener('DOMContentLoaded', () => {
+    initNotificacoes();
     const page = document.body.dataset.page;
 
     inicializarSaudacaoUsuario();
@@ -653,6 +695,7 @@ function inicializarPerfil() {
     let produtoEmEdicao = null;
     let graficoContext = null;
     let pedidoEmEdicao = null;
+    let canalWatcherVendas = null;
 
     renderTabela();
     renderProdutosCliente();
@@ -1673,6 +1716,28 @@ function inicializarPerfil() {
         }
     }
 
+    function inicializarWatcherVendas() {
+        if (!supabaseDisponivel || !currentUser || canalWatcherVendas) return;
+        if ((currentUser.user_metadata?.perfil || 'cliente') !== 'negocio') return;
+
+        canalWatcherVendas = supabase
+            .channel(`pedidos-vendas-${currentUser.id}`)
+            .on('postgres_changes', {
+                event: 'INSERT',
+                schema: 'public',
+                table: 'pedidos'
+            }, payload => {
+                const pedido = payload.new;
+                if (!pedido?.itens) return;
+                const vendeu = pedido.itens.some(item => (item.owner_id || localSellerId) === currentUser.id);
+                if (vendeu) {
+                    mostrarNotificacao('success', 'Nova venda registrada', `Pedido ${pedido.id.slice(0, 8)} foi criado.`);
+                    renderDashboardVendedor();
+                }
+            })
+            .subscribe();
+    }
+
     if (refreshOrdersButton) {
         refreshOrdersButton.addEventListener('click', async () => {
             if (refreshOrdersButton.dataset.state === 'loading') return;
@@ -1820,6 +1885,7 @@ function inicializarPerfil() {
             renderPedidosCliente();
             renderDashboardVendedor();
             preencherPerfilUsuario();
+            inicializarWatcherVendas();
         } catch (err) {
             console.warn('Não foi possível recuperar a sessão atual.', err);
         }
@@ -1832,6 +1898,7 @@ function inicializarPerfil() {
             if (currentUser) {
                 carregarPedidosSupabase();
                 preencherPerfilUsuario();
+                inicializarWatcherVendas();
             } else {
                 renderPedidosCliente();
             }
@@ -1862,8 +1929,8 @@ function inicializarPerfil() {
         if (!supabaseDisponivel || carregandoProdutos) return;
         carregandoProdutos = true;
         try {
-        const { data, error } = await supabase
-            .from('produtos')
+            const { data, error } = await supabase
+                .from('produtos')
             .select('id, nome, descricao, categoria, preco, imagem, owner_id, endereco_loja, created_at')
                 .order('created_at', { ascending: false });
 
@@ -1984,7 +2051,7 @@ function formatarEnderecoCompleto(endereco) {
     return [linha1, linha2, linha3, complemento, cep].filter(Boolean).join(' • ');
 }
 
-const cidadesAtendidas = ['balneario picarras', 'balneário piçarras', 'penha', 'barra velha'];
+const cidadesAtendidas = ['picarras', 'penha', 'barra velha'];
 
 function detectarTipoChavePix(chave) {
     if (!chave) return 'aleatoria';
@@ -2067,9 +2134,20 @@ function carregarEnderecoCliente() {
     }
 }
 
+function normalizarCidade(texto) {
+    return texto
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .replace(/ç/g, 'c')
+        .replace(/[^a-z\s]/gi, ' ')
+        .toLowerCase()
+        .replace(/\s+/g, ' ')
+        .trim();
+}
+
 function cidadeAtendida(cidade) {
     if (!cidade) return false;
-    const normalizada = cidade.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+    const normalizada = normalizarCidade(cidade);
     return cidadesAtendidas.some(permitida => normalizada.includes(permitida));
 }
 
@@ -2090,7 +2168,7 @@ function carregarProdutosVendedor() {
         const normalizada = lista.map(produto => {
             let atualizado = { ...produto };
             if (!atualizado.id) {
-                precisaAtualizar = true;
+            precisaAtualizar = true;
                 atualizado = { ...atualizado, id: gerarIdLocal() };
             }
             if (!atualizado.owner_id) {
@@ -2369,7 +2447,7 @@ async function inicializarCarrinho() {
 
             const itensConfirmados = obterItensCarrinho();
             if (!itensConfirmados.length) {
-                if (feedback) {
+            if (feedback) {
                     feedback.textContent = 'Carrinho vazio. Adicione itens antes de finalizar.';
                     feedback.style.color = '#e23a44';
                 }
@@ -2467,13 +2545,13 @@ async function inicializarCarrinho() {
                 const statusLegivel = formatarStatusPedido(pedido.status);
                 if (feedback) {
                     feedback.textContent = `Pedido registrado (${origemRegistro === 'remoto' ? 'sincronizado' : 'offline'}). Status: ${statusLegivel}.`;
-                    feedback.style.color = '#1c8c5d';
-                }
+                feedback.style.color = '#1c8c5d';
+            }
                 if (paymentForm) paymentForm.reset();
                 if (cashChangeWrapper) cashChangeWrapper.classList.add('hidden');
                 resetarPixSession();
-                salvarItensCarrinho([]);
-                inicializarCarrinho();
+            salvarItensCarrinho([]);
+            inicializarCarrinho();
             } catch (err) {
                 console.error('Erro ao processar pagamento', err);
                 const alvo = paymentFeedback || feedback;
@@ -3043,6 +3121,8 @@ async function inicializarChat() {
     let conversas = [];
     let conversaAtiva = null;
     let canalMensagens = null;
+    let canalMensagensGlobal = null;
+    let unreadCounters = {};
 
     async function obterSessao() {
         if (!supabaseDisponivel) return;
@@ -3062,6 +3142,8 @@ async function inicializarChat() {
 
     await obterSessao();
     if (currentUser) {
+        unreadCounters = carregarContadoresNaoLidos(currentUser.id);
+        atualizarBadgeChatGlobal(totalNaoLido());
         carregarConversas();
     } else {
         atualizarVisibilidade();
@@ -3082,15 +3164,26 @@ async function inicializarChat() {
         }
 
         chatEmptyState?.classList.add('hidden');
-        listaConversas.innerHTML = conversas.map(conversa => `
+        const idsAtuais = new Set(conversas.map(item => item.id));
+        Object.keys(unreadCounters).forEach(id => {
+            if (!idsAtuais.has(id)) delete unreadCounters[id];
+        });
+        salvarContadoresNaoLidos();
+        atualizarBadgeChatGlobal(totalNaoLido());
+
+        listaConversas.innerHTML = conversas.map(conversa => {
+            const naoLidas = unreadCounters[conversa.id] || 0;
+            return `
             <button type="button" data-id="${conversa.id}" class="chat-list-item ${conversaAtiva?.id === conversa.id ? 'active' : ''}">
                 <div>
                     <strong>${conversa.titulo || 'Conversa'}</strong>
                     <small>Pedido ${conversa.pedido_id ? conversa.pedido_id.slice(0, 8) : '—'}</small>
                 </div>
                 <p>${conversa.ultima_mensagem || 'Sem mensagens ainda.'}</p>
+                ${naoLidas ? `<span class="chat-badge">${naoLidas > 9 ? '9+' : naoLidas}</span>` : ''}
             </button>
-        `).join('');
+        `;
+        }).join('');
 
         listaConversas.querySelectorAll('button[data-id]').forEach(button => {
             button.addEventListener('click', () => abrirConversa(button.dataset.id));
@@ -3099,6 +3192,8 @@ async function inicializarChat() {
         if (!conversaAtiva && conversas.length) {
             abrirConversa(conversas[0].id);
         }
+
+        inicializarWatcherMensagens();
     }
 
     async function carregarConversasSupabase() {
@@ -3143,6 +3238,7 @@ async function inicializarChat() {
 
         salvarMensagensLocal(conversaId, mensagens);
         renderizarMensagens(mensagens);
+        limparNaoLido(conversaId);
         iniciarRealtime(conversaId);
     }
 
@@ -3266,6 +3362,95 @@ async function inicializarChat() {
             chatFeedback.textContent = 'Mensagem salva offline. Sincronize quando estiver online.';
             chatFeedback.style.color = '#f3c664';
         });
+    }
+
+    function inicializarWatcherMensagens() {
+        if (!supabaseDisponivel || !currentUser || canalMensagensGlobal) return;
+        canalMensagensGlobal = supabase
+            .channel(`chat-global-${currentUser.id}`)
+            .on('postgres_changes', {
+                event: 'INSERT',
+                schema: 'public',
+                table: 'mensagens'
+            }, payload => {
+                const msg = payload.new;
+                if (!msg || msg.autor_id === currentUser.id) return;
+                const conversaPertence = conversas.find(item =>
+                    item.id === msg.conversa_id &&
+                    (item.cliente_id === currentUser.id || item.vendedor_id === currentUser.id)
+                );
+                if (!conversaPertence) {
+                    carregarConversas();
+                    return;
+                }
+                if (conversaAtiva?.id !== msg.conversa_id) {
+                    incrementarNaoLido(msg.conversa_id);
+                }
+                if (conversaAtiva?.id === msg.conversa_id) return;
+                const perfilUsuario = currentUser.user_metadata?.perfil || 'cliente';
+                const preview = (msg.conteudo || 'Nova mensagem no chat.').slice(0, 80);
+                if (perfilUsuario === 'negocio' && msg.autor_tipo === 'cliente') {
+                    mostrarNotificacao('info', 'Novo contato do cliente', preview);
+                } else if (perfilUsuario !== 'negocio' && msg.autor_tipo === 'vendedor') {
+                    mostrarNotificacao('info', 'Mensagem do vendedor', preview);
+                }
+            })
+            .subscribe();
+    }
+
+    function carregarContadoresNaoLidos(userId) {
+        try {
+            const raw = localStorage.getItem(`nimble_chat_unread_${userId}`);
+            return raw ? JSON.parse(raw) : {};
+        } catch {
+            return {};
+        }
+    }
+
+    function salvarContadoresNaoLidos() {
+        if (!currentUser) return;
+        try {
+            localStorage.setItem(`nimble_chat_unread_${currentUser.id}`, JSON.stringify(unreadCounters));
+        } catch {
+        }
+    }
+
+    function totalNaoLido() {
+        return Object.values(unreadCounters).reduce((acc, valor) => acc + Number(valor || 0), 0);
+    }
+
+    function limparNaoLido(conversaId) {
+        if (!conversaId || !unreadCounters[conversaId]) return;
+        unreadCounters[conversaId] = 0;
+        salvarContadoresNaoLidos();
+        atualizarBadgeChatGlobal(totalNaoLido());
+        atualizarBadgeConversa(conversaId);
+    }
+
+    function incrementarNaoLido(conversaId) {
+        if (!conversaId) return;
+        unreadCounters[conversaId] = (unreadCounters[conversaId] || 0) + 1;
+        salvarContadoresNaoLidos();
+        atualizarBadgeChatGlobal(totalNaoLido());
+        atualizarBadgeConversa(conversaId);
+    }
+
+    function atualizarBadgeConversa(conversaId) {
+        if (!listaConversas) return;
+        const button = listaConversas.querySelector(`button[data-id="${conversaId}"]`);
+        if (!button) return;
+        let badge = button.querySelector('.chat-badge');
+        const valor = unreadCounters[conversaId] || 0;
+        if (valor > 0) {
+            if (!badge) {
+                badge = document.createElement('span');
+                badge.className = 'chat-badge';
+                button.appendChild(badge);
+            }
+            badge.textContent = valor > 9 ? '9+' : valor.toString();
+        } else if (badge) {
+            badge.remove();
+        }
     }
 
     function atualizarVisibilidade() {
